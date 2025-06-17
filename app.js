@@ -1,38 +1,58 @@
 // app.js
-require('dotenv').config();
+const express       = require('express');
+const swaggerUi     = require('swagger-ui-express');
+const swaggerJSDoc  = require('swagger-jsdoc');
+const userRoutes    = require('./routers/api/users');
 
-const express     = require('express');
-const path        = require('path');
-const swaggerUi   = require('swagger-ui-express');
-const swaggerSpec = require('./swagger/swagger');
-
-const htmlRoutes = require('./routers/route'); // deve ser um express.Router()
-const apiRoutes  = require('./routers/api');   // deve ser um express.Router()
-
-const db   = require('./config/db_sequelize');
-const app  = express();
-const PORT = process.env.PORT || 8081;
-
+const app = express();
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', htmlRoutes);
+const swaggerDefinition = {
+  openapi: '3.0.0',
+  info: {
+    title: 'RepoWeb2 API',
+    version: '1.0.0',
+    description: 'API REST com autenticação JWT e Swagger'
+  },
+  servers: [
+    { url: 'http://localhost:3000/api', description: 'Servidor local' }
+  ],
+  components: {
+    securitySchemes: {
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT'
+      }
+    },
+    schemas: {
+      User: {
+        type: 'object',
+        properties: {
+          nome:      { type: 'string' },
+          email:     { type: 'string' },
+          password:  { type: 'string' }
+        },
+        required: ['nome', 'email', 'password']
+      }
+    }
+  },
+  security: [{ bearerAuth: [] }]
+};
 
-app.use('/api', apiRoutes);
+const options = {
+  swaggerDefinition,
+  apis: ['./routers/api/*.js']
+};
+
+const swaggerSpec = swaggerJSDoc(options);
 
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-db.sequelize.sync()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`→ Servidor em: http://localhost:${PORT}`);
-      console.log(`→ Swagger em:  http://localhost:${PORT}/api/docs`);
-    });
-  })
-  .catch(err => {
-    console.error('Erro ao conectar no banco:', err);
-    process.exit(1);
-  });
+// Rotas da API
+app.use('/api/users', userRoutes);
 
-module.exports = app;
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor rodando em http://localhost:${PORT}`);
+});

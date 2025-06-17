@@ -1,15 +1,14 @@
-const Sequelize = require('sequelize');
-const sequelize = new Sequelize('web2_db', 'postgres', '1234', { host: 'localhost', dialect: 'postgres' });
+const { Sequelize } = require('sequelize');
 
-var db = {};
-db.Sequelize = Sequelize;
-db.sequelize = sequelize;
+const sequelize = new Sequelize(
+  process.env.DB_NAME || 'web2_db',
+  process.env.DB_USER || 'postgres',
+  process.env.DB_PASS || '1234',
+  {
+    host: process.env.DB_HOST || 'localhost',
+    dialect: 'postgres',
+    logging: false
+  }
+);
 
-db.Usuario = require('../models/relational/usuario.js')(sequelize, Sequelize);
-db.Clinic = require('../models/relational/clinic.js')(sequelize, Sequelize);
-db.Doctor = require('../models/relational/doctor.js')(sequelize, Sequelize);
-
-db.Clinic.hasMany(db.Doctor, { foreignKey: 'clinic_id', onDelete: 'CASCADE' });
-db.Doctor.belongsTo(db.Clinic, { foreignKey: 'clinic_id' });
-
-module.exports = db;
+module.exports = sequelize;

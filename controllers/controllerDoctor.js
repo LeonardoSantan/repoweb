@@ -1,7 +1,6 @@
 const db = require('../config/db_sequelize');
 module.exports = {
   async getCreate(req, res) {
-    // Busca clínicas para select
     const clinics = await db.Clinic.findAll();
     res.render('doctor/doctorCreate', { clinics: clinics.map(c => c.toJSON()) });
   },
