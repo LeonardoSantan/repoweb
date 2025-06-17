@@ -1,0 +1,14 @@
+<form action="/doctorCreate" method="post">
+  Nome: <input type="text" name="first_name"><br>
+  Sobrenome: <input type="text" name="last_name"><br>
+  Telefone: <input type="text" name="phone"><br>
+  Email: <input type="text" name="email"><br>
+  CRM: <input type="text" name="crm"><br>
+  Clínica:
+  <select name="clinic_id">
+    {{#each clinics}}
+      <option value="{{id}}">{{name}}</option>
+    {{/each}}
+  </select><br>
+  <input type="submit" value="Cadastrar Médico">
+</form>

@@ -1,0 +1,20 @@
+<table border="1">
+  <tr>
+    <th>Nome</th>
+    <th>Sobrenome</th>
+    <th>Telefone</th>
+    <th>Email</th>
+    <th>CRM</th>
+    <th>Clínica</th>
+  </tr>
+  {{#each doctors}}
+  <tr>
+    <td>{{first_name}}</td>
+    <td>{{last_name}}</td>
+    <td>{{phone}}</td>
+    <td>{{email}}</td>
+    <td>{{crm}}</td>
+    <td>{{clinic.name}}</td>
+  </tr>
+  {{/each}}
+</table>
