@@ -1,15 +1,14 @@
-const express = require('express');
-const ctrl    = require('../../controllers/userController');
-const auth    = require('../../middlewares/auth');
-
-const router = express.Router();
-
 /**
  * @swagger
  * tags:
- *   name: Users
- *   description: CRUD de usuários
+ *   name: Userss
+ *   description: Gerenciamento de usuários
  */
+
+const express = require('express');
+const router = express.Router();
+const userController = require('../../controllers/userController');
+const auth = require('../../middlewares/auth');
 
 /**
  * @swagger
@@ -31,8 +30,15 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Token JWT
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
  */
-router.post('/login', ctrl.login);
+router.post('/login', userController.login);
 
 /**
  * @swagger
@@ -45,8 +51,14 @@ router.post('/login', ctrl.login);
  *     responses:
  *       200:
  *         description: Array de usuários
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
  */
-router.get('/', auth, ctrl.index);
+router.get('/', auth, userController.index);
 
 /**
  * @swagger
@@ -65,10 +77,14 @@ router.get('/', auth, ctrl.index);
  *     responses:
  *       200:
  *         description: Usuário encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
  *       404:
  *         description: Usuário não encontrado
  */
-router.get('/:id', auth, ctrl.show);
+router.get('/:id', auth, userController.show);
 
 /**
  * @swagger
@@ -87,8 +103,12 @@ router.get('/:id', auth, ctrl.show);
  *     responses:
  *       201:
  *         description: Usuário criado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
  */
-router.post('/', auth, ctrl.store);
+router.post('/', auth, userController.store);
 
 /**
  * @swagger
@@ -112,10 +132,14 @@ router.post('/', auth, ctrl.store);
  *     responses:
  *       200:
  *         description: Usuário atualizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
  *       404:
  *         description: Usuário não encontrado
  */
-router.put('/:id', auth, ctrl.update);
+router.put('/:id', auth, userController.update);
 
 /**
  * @swagger
@@ -135,6 +159,6 @@ router.put('/:id', auth, ctrl.update);
  *       204:
  *         description: Usuário removido
  */
-router.delete('/:id', auth, ctrl.destroy);
+router.delete('/:id', auth, userController.destroy);
 
 module.exports = router;

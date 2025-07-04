@@ -1,0 +1,26 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgres:16
+    container_name: web2_pg
+    environment:
+      POSTGRES_DB:  web2_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5433:5432"          # bate com DB_PORT=5433 do .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+
+  mongo:
+    image: mongo:7
+    container_name: web2_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+
+volumes:
+  pgdata:
+  mongodata:

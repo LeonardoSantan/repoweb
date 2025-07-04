@@ -8,7 +8,6 @@ const Usuario = require('../models/relational/usuario')(sequelize, Sequelize);
 // Segredo para assinatura dos tokens
 const JWT_SECRET = process.env.JWT_SECRET || 'segredo-super-seguro';
 
-sequelize.sync();
 
 exports.index = async (req, res) => {
   const users = await Usuario.findAll();
