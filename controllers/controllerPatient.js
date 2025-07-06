@@ -3,8 +3,32 @@ const { Patient } = require('../models');
 
 module.exports = {
   async create(req, res) {
+    console.log('Dados recebidos no corpo da requisição:', req.body);
     try {
       const { first_name, last_name, phone, email, address, date_of_birth } = req.body;
+      
+      // Validação dos campos obrigatórios
+      if (!first_name || !last_name || !phone || !email || !address || !date_of_birth) {
+        console.log('Campos obrigatórios faltando:', { 
+          first_name: !!first_name, 
+          last_name: !!last_name, 
+          phone: !!phone, 
+          email: !!email, 
+          address: !!address, 
+          date_of_birth: !!date_of_birth 
+        });
+        return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+      }
+      
+      console.log('Tentando criar paciente com os dados:', { 
+        first_name, 
+        last_name, 
+        phone, 
+        email, 
+        address, 
+        date_of_birth 
+      });
+      
       const patient = await Patient.create({
         id: uuidv4(),
         first_name,
@@ -14,9 +38,16 @@ module.exports = {
         address,
         date_of_birth
       });
+      
+      console.log('Paciente criado com sucesso:', patient);
       res.status(201).json(patient);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      console.error('Erro ao criar paciente:', error);
+      res.status(500).json({ 
+        error: 'Erro ao criar paciente',
+        details: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
     }
   },
 

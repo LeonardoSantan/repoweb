@@ -2,10 +2,21 @@
 const express       = require('express');
 const swaggerUi     = require('swagger-ui-express');
 const swaggerJSDoc  = require('swagger-jsdoc');
+const cors          = require('cors');
 const userRoutes    = require('./routers/api/users');
 const apiRouter     = require('./routers/api');
 
 const app = express();
+
+// Configuração do CORS
+const corsOptions = {
+  origin: 'http://localhost:5173', // URL do frontend
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+  optionsSuccessStatus: 204
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 require('dotenv').config();
@@ -22,18 +33,16 @@ mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Conectado ao MongoDB'))
   .catch(err => console.error('Erro MongoDB:', err));
 
-// Carregar todos os modelos e associações a partir de um único ponto
+// Conexão Sequelize/PostgreSQL
 const { sequelize } = require('./models');
-
-// Sincronizar tabelas
-sequelize.sync().then(async () => {
+sequelize.sync({ alter: true }).then(async () => {
   console.log('Tabelas sincronizadas!');
-  // Seed inicial (admin user)
   await require('./seeds/initialData')();
 }).catch(err => {
   console.error('Erro ao sincronizar tabelas:', err);
 });
 
+// Swagger Definition
 const swaggerDefinition = {
   openapi: '3.0.0',
   info: {
@@ -126,7 +135,7 @@ app.get('/', (req, res) => {
   res.send('API RepoWeb2 rodando! Veja /api/docs para documentação.');
 });
 
-// Rotas da API
+
 app.use('/api', apiRouter);
 app.use('/api/users', userRoutes);
 

@@ -5,25 +5,37 @@
  *   description: CRUD de clínicas
  */
 const express = require('express');
-const { Clinic } = require('../../models');
-const verify = require('../../middlewares/verifyToken');
+const clinicController = require('../../controllers/api/clinicController');
+const verifyToken = require('../../middlewares/verifyToken');
+const authorizeRole = require('../../middlewares/authorizeRole');
 const router = express.Router();
 
+// Rotas públicas (não requerem autenticação)
+router.get('/', clinicController.list);
+router.get('/:id', clinicController.getById);
+
+// Rotas protegidas (requerem autenticação e papel de admin)
+router.post('/', verifyToken, authorizeRole('admin'), clinicController.create);
+router.put('/:id', verifyToken, authorizeRole('admin'), clinicController.update);
+router.delete('/:id', verifyToken, authorizeRole('admin'), clinicController.delete);
+
+// Documentação Swagger
 /**
  * @swagger
  * /clinics:
  *   get:
  *     summary: Lista todas as clínicas
  *     tags: [Clinic]
- *     security: [{ bearerAuth: [] }]
  *     responses:
  *       200:
- *         description: Array de clínicas
+ *         description: Lista de clínicas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Clinic'
  */
-router.get('/', verify, async (req, res) => {
-  const data = await Clinic.findAll();
-  res.json(data);
-});
 
 /**
  * @swagger
@@ -31,27 +43,27 @@ router.get('/', verify, async (req, res) => {
  *   get:
  *     summary: Retorna clínica por ID
  *     tags: [Clinic]
- *     security: [{ bearerAuth: [] }]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema: { type: string, format: uuid }
  *     responses:
- *       200: { description: Clínica encontrada }
- *       404: { description: Não encontrada }
+ *       200: 
+ *         description: Clínica encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Clinic'
+ *       404: 
+ *         description: Clínica não encontrada
  */
-router.get('/:id', verify, async (req, res) => {
-  const clinic = await Clinic.findByPk(req.params.id);
-  if (!clinic) return res.status(404).json({ error: 'Não encontrada' });
-  res.json(clinic);
-});
 
 /**
  * @swagger
  * /clinics:
  *   post:
- *     summary: Cria nova clínica
+ *     summary: Cria nova clínica (apenas admin)
  *     tags: [Clinic]
  *     security: [{ bearerAuth: [] }]
  *     requestBody:
@@ -61,38 +73,43 @@ router.get('/:id', verify, async (req, res) => {
  *           schema:
  *             $ref: '#/components/schemas/ClinicInput'
  *     responses:
- *       201: { description: Criada }
+ *       201: 
+ *         description: Clínica criada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Clinic'
+ *       400:
+ *         description: Dados inválidos
  */
-router.post('/', verify, async (req, res) => {
-  const created = await Clinic.create(req.body);
-  res.status(201).json(created);
-});
 
 /**
  * @swagger
  * /clinics/{id}:
  *   put:
- *     summary: Atualiza clínica
+ *     summary: Atualiza clínica (apenas admin)
  *     tags: [Clinic]
  *     security: [{ bearerAuth: [] }]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
+ *         schema: { type: string, format: uuid }
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema: { $ref: '#/components/schemas/ClinicInput' }
  *     responses:
- *       200: { description: Atualizada }
+ *       200: 
+ *         description: Clínica atualizada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Clinic'
+ *       404: 
+ *         description: Clínica não encontrada
  */
-router.put('/:id', verify, async (req, res) => {
-  const ok = await Clinic.update(req.body, { where: { id: req.params.id } });
-  if (!ok[0]) return res.status(404).json({ error: 'Não encontrada' });
-  const updated = await Clinic.findByPk(req.params.id);
-  res.json(updated);
-});
 
 /**
  * @swagger
@@ -104,10 +121,6 @@ router.put('/:id', verify, async (req, res) => {
  *     responses:
  *       204: { description: Removida }
  */
-router.delete('/:id', verify, async (req, res) => {
-  const rows = await Clinic.destroy({ where: { id: req.params.id } });
-  if (!rows) return res.status(404).json({ error: 'Não encontrada' });
-  res.status(204).send();
-});
+
 
 module.exports = router;

@@ -1,5 +1,6 @@
 const db = require('../config/db_sequelize');
 const path = require('path');
+const bcrypt = require('bcryptjs');
 
 module.exports = {
     async getLogin(req, res) {
@@ -8,14 +9,8 @@ module.exports = {
 
     async postLogin(req, res) {
         try {
-            const usuarios = await db.Usuario.findAll({
-                where: {
-                    login: req.body.login,
-                    senha: req.body.senha
-                }
-            });
-
-            if (usuarios.length > 0) {
+            const usuario = await db.Usuario.findOne({ where: { login: req.body.login } });
+            if (usuario && bcrypt.compareSync(req.body.senha, usuario.senha)) {
                 // ✅ Cria sessão
                 req.session.login = req.body.login;
                 res.render('home');
@@ -43,9 +38,11 @@ module.exports = {
             return res.send("Este login já está criado!");
         }
 
+        const senhaHash = bcrypt.hashSync(req.body.senha, 10);
+
         await db.Usuario.create({
             login: req.body.login,
-            senha: req.body.senha,
+            senha: senhaHash,
             tipo: req.body.tipo
         });
 
@@ -74,7 +71,15 @@ module.exports = {
 
     async postUpdate(req, res) {
         try {
-            await db.Usuario.update(req.body, { where: { id: req.body.id } });
+            let updateData = { ...req.body };
+            // Se vier senha nova, aplica hash
+            if (req.body.senha && req.body.senha.trim() !== '') {
+                updateData.senha = bcrypt.hashSync(req.body.senha, 10);
+            } else {
+                // Remove senha se veio vazia para não sobrescrever
+                delete updateData.senha;
+            }
+            await db.Usuario.update(updateData, { where: { id: req.body.id } });
             res.render('home');
         } catch (err) {
             console.log(err);
